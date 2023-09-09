@@ -170,6 +170,8 @@ void UpdateAndDrawParticles(Context* ctx)
   word* data;
   word x;
   word y = 32; // see below
+  word tableIndex;
+  sbyte adjustment;
 
   for (groupIndex = 0; groupIndex < NUM_PARTICLE_GROUPS; groupIndex++)
   {
@@ -199,8 +201,8 @@ void UpdateAndDrawParticles(Context* ctx)
         // Recreate out-of-bounds read from the original code (reading past the
         // end of MOVEMENT_TABLE, which has been copied to the stack, thus
         // reading the low byte of the `y` variable).
-        word tableIndex = *(data + i + 1);
-        sbyte adjustment =
+        tableIndex = *(data + i + 1);
+        adjustment =
           tableIndex == 42 ? (sbyte)(y & 0xFF) : MOVEMENT_TABLE[tableIndex];
 
         *(data + i + 2) += adjustment;

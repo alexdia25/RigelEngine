@@ -2057,6 +2057,7 @@ static void Act_MovingMapPartTrigger(Context* ctx, word handle)
   ActorState* state = ctx->gmActorStates + handle;
   word descIndex;
   word right;
+  MovingMapPartState* mapPart;
 
   if (ctx->gmNumMovingMapParts == MAX_NUM_MOVING_MAP_PARTS - 1)
   {
@@ -2066,7 +2067,7 @@ static void Act_MovingMapPartTrigger(Context* ctx, word handle)
     return;
   }
 
-  MovingMapPartState* mapPart =
+  mapPart =
     ctx->gmMovingMapParts + ctx->gmNumMovingMapParts;
 
   state->drawStyle = DS_INVISIBLE;

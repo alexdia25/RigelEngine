@@ -1337,96 +1337,96 @@ static void UpdateActorPlayerCollision(Context* ctx, word handle)
         }
         break;
 
-      case ACT_TELEPORTER_2:
-        if (
-          state->x <= ctx->plPosX && state->x + 3 >= ctx->plPosX &&
-          state->y == ctx->plPosY && ctx->plState == PS_NORMAL)
-        {
-          ShowTutorial(ctx, TUT_TELEPORTER);
-        }
-
-        // Check if the player is interacting with the teleporter.
-        // The active area is smaller than the sprite's bounding box, so we
-        // need to do an additional check here even though we already called
-        // AreSpritesTouching() at the top of this function.
-        if (
-          state->x <= ctx->plPosX && state->x + 3 >= ctx->plPosX &&
-          state->y == ctx->plPosY && ctx->inputMoveUp &&
-          ctx->plState == PS_NORMAL)
-        {
-          byte counterpartId;
-          ActorState* candidate;
-
-          PlaySound(ctx, SND_TELEPORT);
-
-          // The way the teleport target is found is based on the actor ID.
-          // There are two actor IDs that both spawn a teleporter into the
-          // level.  Each teleporter looks for the first actor in the list that
-          // has an ID which is also a teleporter, but not the one the source
-          // teleporter has. Since there is only one teleporter sprite, the
-          // actual ID of the actor is set to the same for both, but the
-          // original ID specified in the level file is stored in var2.
-          //
-          // One consequence of this design is that there can never be more
-          // than one teleport destination in a level - it's not possible to
-          // have two independent teleporter connections, for example.  Placing
-          // more than two won't cause anything serious to happen, but the
-          // result is unlikely to be what the level designer intends to happen.
-          //
-          // Here, we determine the right counterpart ID to use based on our
-          // own ID, and also handle the "backdrop switch on teleport" logic
-          // if enabled.
-          if (state->var2 == ACT_TELEPORTER_1)
+      case ACT_TELEPORTER_2: 
+          if (
+            state->x <= ctx->plPosX && state->x + 3 >= ctx->plPosX &&
+            state->y == ctx->plPosY && ctx->plState == PS_NORMAL)
           {
-            if (ctx->mapSwitchBackdropOnTeleport)
-            {
-              ctx->bdUseSecondary = true;
-            }
-
-            counterpartId = ACT_TELEPORTER_2;
-          }
-          else
-          {
-            if (ctx->mapSwitchBackdropOnTeleport)
-            {
-              ctx->bdUseSecondary = false;
-            }
-
-            counterpartId = ACT_TELEPORTER_1;
+            ShowTutorial(ctx, TUT_TELEPORTER);
           }
 
-          // Now go through the entire list of actors, and find the first one
-          // that is a) a teleporter and b) has the right counterpart ID.
-          int16_t i;
-
-          for (i = 0; i < ctx->gmNumActors; i++)
+          // Check if the player is interacting with the teleporter.
+          // The active area is smaller than the sprite's bounding box, so we
+          // need to do an additional check here even though we already called
+          // AreSpritesTouching() at the top of this function.
+          if (
+            state->x <= ctx->plPosX && state->x + 3 >= ctx->plPosX &&
+            state->y == ctx->plPosY && ctx->inputMoveUp &&
+            ctx->plState == PS_NORMAL)
           {
-            candidate = ctx->gmActorStates + i;
+            byte counterpartId;
+            ActorState* candidate;
+            int16_t i;
 
-            if (
-              counterpartId == candidate->var2 &&
-              candidate->id == ACT_TELEPORTER_2)
+            PlaySound(ctx, SND_TELEPORT);
+
+            // The way the teleport target is found is based on the actor ID.
+            // There are two actor IDs that both spawn a teleporter into the
+            // level.  Each teleporter looks for the first actor in the list that
+            // has an ID which is also a teleporter, but not the one the source
+            // teleporter has. Since there is only one teleporter sprite, the
+            // actual ID of the actor is set to the same for both, but the
+            // original ID specified in the level file is stored in var2.
+            //
+            // One consequence of this design is that there can never be more
+            // than one teleport destination in a level - it's not possible to
+            // have two independent teleporter connections, for example.  Placing
+            // more than two won't cause anything serious to happen, but the
+            // result is unlikely to be what the level designer intends to happen.
+            //
+            // Here, we determine the right counterpart ID to use based on our
+            // own ID, and also handle the "backdrop switch on teleport" logic
+            // if enabled.
+            if (state->var2 == ACT_TELEPORTER_1)
             {
-              // We have found our destination!
-
-              // Clear any flying tile debris, since debris pieces don't take
-              // the camera position into account and thus would suddenly appear
-              // at the new location unless cleared.
-              if (ctx->gmExplodingSectionTicksElapsed)
+              if (ctx->mapSwitchBackdropOnTeleport)
               {
-                ctx->gmExplodingSectionTicksElapsed = 0;
+                ctx->bdUseSecondary = true;
               }
 
-              TeleportTo(ctx, candidate->x, candidate->y);
-              break;
+              counterpartId = ACT_TELEPORTER_2;
             }
-          }
+            else
+            {
+              if (ctx->mapSwitchBackdropOnTeleport)
+              {
+                ctx->bdUseSecondary = false;
+              }
 
-          // We didn't find a suitable destination. If there's only one
-          // teleporter in a level, it acts as level exit.
-          if (i == ctx->gmNumActors)
-          {
-            ctx->gmGameState = GS_LEVEL_FINISHED;
+              counterpartId = ACT_TELEPORTER_1;
+            }
+
+            // Now go through the entire list of actors, and find the first one
+            // that is a) a teleporter and b) has the right counterpart ID.
+
+            for (i = 0; i < ctx->gmNumActors; i++)
+            {
+              candidate = ctx->gmActorStates + i;
+
+              if (
+                counterpartId == candidate->var2 &&
+                candidate->id == ACT_TELEPORTER_2)
+              {
+                // We have found our destination!
+
+                // Clear any flying tile debris, since debris pieces don't take
+                // the camera position into account and thus would suddenly appear
+                // at the new location unless cleared.
+                if (ctx->gmExplodingSectionTicksElapsed)
+                {
+                  ctx->gmExplodingSectionTicksElapsed = 0;
+                }
+
+                TeleportTo(ctx, candidate->x, candidate->y);
+                break;
+              }
+            }
+
+            // We didn't find a suitable destination. If there's only one
+            // teleporter in a level, it acts as level exit.
+            if (i == ctx->gmNumActors)
+            {
+              ctx->gmGameState = GS_LEVEL_FINISHED;
           }
         }
         break;
