@@ -222,7 +222,7 @@ namespace std
             constexpr decltype(auto) index(Rng&& rng, Index&& i) noexcept
             {
                 FCV_EXPECT(static_cast<ptrdiff_t>(i) < (end(rng) - begin(rng)));
-                return begin(forward<Rng>(rng))[forward<Index>(i)];
+                return begin(std::forward<Rng>(rng))[std::forward<Index>(i)];
             }
 
             /// \name Workarounds
@@ -482,7 +482,7 @@ namespace std
                     {
                         FCV_EXPECT(!full()
                                    && "tried to emplace_back on full storage!");
-                        index(data_, size()) = T(forward<Args>(args)...);
+                        index(data_, size()) = T(std::forward<Args>(args)...);
                         unsafe_set_size(size() + 1);
                     }
 
@@ -990,10 +990,10 @@ namespace std
                       FCV_REQUIRES_(fcv_detail::Constructible<T, U>&&
                                         fcv_detail::Assignable<reference, U&&>)>
             constexpr void push_back(U&& value) noexcept(
-                noexcept(declval<fixed_capacity_vector>().emplace_back(forward<U>(value))))
+                noexcept(declval<fixed_capacity_vector>().emplace_back(std::forward<U>(value))))
             {
                 FCV_EXPECT(!full() && "vector is full!");
-                emplace_back(forward<U>(value));
+                emplace_back(std::forward<U>(value));
             }
 
             /// Appends a default constructed `T` at the end of the vector.
@@ -1337,8 +1337,8 @@ namespace std
             template <typename U,
                       FCV_REQUIRES_(fcv_detail::Convertible<U, value_type>)>
             constexpr fixed_capacity_vector(initializer_list<U> il) noexcept(
-                noexcept(base_t(move(il))))
-                : base_t(move(il))
+                noexcept(base_t(std::move(il))))
+                : base_t(std::move(il))
             {  // assert happens in base_t constructor
             }
 
